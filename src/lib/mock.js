@@ -65,7 +65,7 @@ export const mock = {
     return ok(true);
   },
 
-  signUp({ phone, password, name, dob, sex, language }) {
+  signUp({ phone, password, name, dob, sex, goals, language }) {
     if (!codeVerified) return fail("otp_required");
     codeVerified = false;
     account = {
@@ -78,7 +78,7 @@ export const mock = {
         date_of_birth: dob,
         preferred_lang: language,
         credits: 1,
-        goals: [],
+        goals,
       },
     };
     return ok(account.profile);

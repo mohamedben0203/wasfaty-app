@@ -129,5 +129,6 @@
   "goal_cardiovascular_health": "Heart health",
   "goal_general_wellness": "General wellness",
   "goal_recovery_monitoring": "Recovery & monitoring",
+  "goalsOptional": "optional, up to 3",
   "setGoals": "Set your health goals"
 }

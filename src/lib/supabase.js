@@ -260,8 +260,8 @@ export async function verifyOtp({ phone, otp }) {
 
 // Creates the Supabase Auth account, then the profile row. The profile RPC only succeeds
 // when this phone verified an OTP in the last 30 minutes.
-export async function signUp({ phone, password, name, dob, sex, language }) {
-  if (isMockPhone(phone)) return mock.signUp({ phone, password, name, dob, sex, language });
+export async function signUp({ phone, password, name, dob, sex, goals, language }) {
+  if (isMockPhone(phone)) return mock.signUp({ phone, password, name, dob, sex, goals, language });
 
   const email = authEmailForPhone(phone);
   const signup = await request("/auth/v1/signup", {
@@ -291,6 +291,13 @@ export async function signUp({ phone, password, name, dob, sex, language }) {
   if (error || !data) {
     clearSession();
     return { data: null, error: error || { code: "profile_missing" } };
+  }
+
+  // The profile RPC takes no goals, so they are saved onto the new row. If that fails the
+  // account still stands, and the goals can be set from the summary.
+  if (goals.length > 0) {
+    const saved = await updateProfile(data, { goals });
+    if (saved.data) return saved;
   }
 
   return { data, error: null };

@@ -129,5 +129,6 @@
   "goal_cardiovascular_health": "صحة القلب",
   "goal_general_wellness": "الصحة العامة",
   "goal_recovery_monitoring": "التعافي والمتابعة",
+  "goalsOptional": "اختياري، حتى 3",
   "setGoals": "حدد أهدافك الصحية"
 }

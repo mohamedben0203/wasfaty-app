@@ -13,6 +13,7 @@ import {
   verifyOtp,
 } from "../lib/supabase";
 import logo from "../assets/logo.svg";
+import GoalPicker from "./GoalPicker";
 import { PulseLine } from "./icons";
 import {
   Button,
@@ -43,6 +44,7 @@ export default function AuthPage({ onAuth }) {
   const [name, setName] = useState("");
   const [dob, setDob] = useState("");
   const [sex, setSex] = useState("");
+  const [goals, setGoals] = useState([]);
   const [newPassword, setNewPassword] = useState("");
   const [confirmPassword, setConfirmPassword] = useState("");
   const [busy, setBusy] = useState(false);
@@ -159,6 +161,7 @@ export default function AuthPage({ onAuth }) {
       name,
       dob,
       sex,
+      goals,
       language: locale,
     });
     if (signupError) return failWith(signupError, "signupFailed");
@@ -395,6 +398,15 @@ export default function AuthPage({ onAuth }) {
                   />
                 </Field>
               </>
+            )}
+
+            {mode === "signup" && step === "details" && (
+              <div>
+                <p className="mb-1.5 text-sm font-medium text-slate-700">
+                  {t("myGoals")} <span className="font-normal text-slate-500">· {t("goalsOptional")}</span>
+                </p>
+                <GoalPicker goals={goals} onChange={setGoals} />
+              </div>
             )}
 
             {notice && <Notice tone="info">{notice}</Notice>}

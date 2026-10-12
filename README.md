@@ -34,21 +34,8 @@ phone → code → new password. Only Libyan mobile numbers are accepted, as in 
 
 A verification code can be requested for a number once every 5 minutes, and at most 3 times
 an hour (the first code plus 2 resends). The app enforces this in `src/lib/otpLimit.js`, but
-that only covers this browser. The database enforces it too, in `request_app_auth_otp`, a
-function only this app calls. The kiosk keeps its own limit in `request_auth_otp`.
-
-## Database changes (not applied yet)
-
-`supabase/migrations/` holds three changes. None has been run.
-
-| File | What it does | Before applying |
-| --- | --- | --- |
-| `…_limit_otp_resends.sql` | Adds `request_app_auth_otp` with the 5-minute / 3-per-hour code limit | The app cannot send codes until this is applied; the kiosk is not affected |
-| `…_block_anonymous_data_access.sql` | Stops `exams`, `raw` and `credit_transactions` being read or changed without logging in | Nothing changes for logged-in apps |
-| `…_scope_exam_access.sql` | Each user sees only their own results; admins see all; providers see their machines | Decide what providers should see |
-
-Results are matched to a user by phone number (`exams.person_idnumber`), because
-`exams.user_id` is not being filled in.
+that only covers this browser. The database has its own, looser limit in `request_auth_otp`
+(3 codes per 15 minutes), which the kiosk shares and this app does not change.
 
 ## Project structure
 

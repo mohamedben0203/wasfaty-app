@@ -1,7 +1,7 @@
 // Limits how often a verification code can be requested for one phone number:
 // one code every 5 minutes, and the first code plus 2 resends in any hour.
-// This is the in-app half; request_app_auth_otp in the database enforces the same rule.
-// The kiosk has its own, separate limit.
+// Enforced in this browser only. The database's own limit (3 codes per 15 minutes, shared
+// with the kiosk) is looser and is the only one that holds against someone bypassing the app.
 
 export const RESEND_COOLDOWN_SECONDS = 5 * 60;
 export const MAX_CODES_PER_HOUR = 3;

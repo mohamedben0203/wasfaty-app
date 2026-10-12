@@ -176,9 +176,8 @@ export async function phoneExists(phone) {
   return { data: Boolean(data), error: null };
 }
 
-// The app has its own code-request function so its limit stays separate from the kiosk's.
 export async function requestOtp({ phone, language }) {
-  const { data, error } = await request("/rest/v1/rpc/request_app_auth_otp", {
+  const { data, error } = await request("/rest/v1/rpc/request_auth_otp", {
     method: "POST",
     body: { customer_number: phone, language, expiry_minutes: 10 },
   });

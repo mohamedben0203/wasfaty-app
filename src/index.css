@@ -1,11 +1,18 @@
 @import "tailwindcss";
 
-/* Brand colours from the Wasfaty identity */
+/* Brand colours from the Wasfaty identity; the soft and dark teals are tints of the accent */
 @theme {
+  --font-sans: "IBM Plex Sans Arabic", ui-sans-serif, system-ui, -apple-system, BlinkMacSystemFont, "Segoe UI", sans-serif;
   --color-brand: #3e668c;
   --color-brand-dark: #2f4f6e;
   --color-accent: #7cc8c9;
+  --color-accent-dark: #1d6f72;
+  --color-accent-soft: #e8f6f6;
   --color-ink: #16293b;
+  /* Only for a result's status, always next to its label */
+  --color-status-good: #0ca30c;
+  --color-status-warning: #fab219;
+  --color-status-serious: #ec835a;
   --color-paper: #f3f6f9;
 }
 
@@ -15,7 +22,6 @@
   }
 
   body {
-    font-family: Inter, ui-sans-serif, system-ui, -apple-system, BlinkMacSystemFont, "Segoe UI", sans-serif;
     background: var(--color-paper);
     color: var(--color-ink);
   }

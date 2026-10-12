@@ -19,3 +19,13 @@ export function isValidDob(dob) {
   const { min, max } = getDobBounds();
   return dob >= min && dob <= max;
 }
+
+// Whole years since a yyyy-mm-dd birth date, or null when there is none
+export function ageFromDob(dob) {
+  if (!/^\d{4}-\d{2}-\d{2}$/.test(dob ?? "")) return null;
+  const [year, month, day] = dob.split("-").map(Number);
+  const today = new Date();
+  const hadBirthday =
+    today.getMonth() + 1 > month || (today.getMonth() + 1 === month && today.getDate() >= day);
+  return today.getFullYear() - year - (hadBirthday ? 0 : 1);
+}

@@ -13,8 +13,10 @@ import {
   verifyOtp,
 } from "../lib/supabase";
 import logo from "../assets/logo.svg";
+import { PulseLine } from "./icons";
 import {
   Button,
+  Card,
   Field,
   LanguageToggle,
   LinkButton,
@@ -223,26 +225,27 @@ export default function AuthPage({ onAuth }) {
   const onPhoneStep = mode === "login" || step === "phone";
 
   return (
-    <>
-      <div className="flex justify-end px-5 pt-4">
+    // Sized so that login fits a phone screen without scrolling
+    <div className="relative flex min-h-dvh flex-col bg-linear-to-b from-accent-soft to-paper to-50%">
+      <div className="absolute end-3 top-3 sm:end-5">
         <LanguageToggle />
       </div>
 
-      <main className="mx-auto max-w-md px-5 pt-2 pb-10 sm:pt-[6vh]">
+      <main className="mx-auto w-full max-w-md px-3 pt-3 sm:px-5 sm:pt-[8vh]">
         <img
           src={logo}
           alt={t("brand")}
           width="1167"
           height="728"
-          className="mx-auto h-16 w-auto"
+          className="mx-auto h-11 w-auto sm:h-16"
         />
 
-        <div className="mt-6 rounded-3xl border border-slate-200 bg-white p-6 shadow-[0_12px_32px_-16px_rgb(22_41_59/0.18)] sm:p-8">
+        <Card className="mt-3 p-4 sm:mt-6 sm:p-8">
           {mode !== "login" && (
             <div
               role="img"
               aria-label={t("step", { step: STEP_NUMBER[step], total: TOTAL_STEPS })}
-              className="mb-5 flex justify-center gap-1.5"
+              className="mb-4 flex justify-center gap-1.5"
             >
               {Object.values(STEP_NUMBER).map((number) => (
                 <span
@@ -255,7 +258,7 @@ export default function AuthPage({ onAuth }) {
             </div>
           )}
 
-          <h1 className="text-center text-2xl font-extrabold text-ink">{t(`${mode}Title`)}</h1>
+          <h1 className="text-center text-2xl font-bold text-ink">{t(`${mode}Title`)}</h1>
 
           {onPhoneStep && (
             <p className="mt-1.5 text-center text-slate-600">{t(`${mode}Subtitle`)}</p>
@@ -280,7 +283,7 @@ export default function AuthPage({ onAuth }) {
             </p>
           )}
 
-          <form onSubmit={handleSubmit} noValidate className="mt-6 space-y-4">
+          <form onSubmit={handleSubmit} noValidate className="mt-5 space-y-4">
             {onPhoneStep && (
               <Field label={t("phoneNumber")} id="phone">
                 <PhoneInput
@@ -319,7 +322,7 @@ export default function AuthPage({ onAuth }) {
                   maxLength={6}
                   value={otp}
                   onChange={(event) => setOtp(event.target.value.replace(/\D/g, ""))}
-                  className="text-center text-xl font-bold tracking-[0.4em]"
+                  className="text-center text-xl font-semibold tracking-[0.4em]"
                 />
               </Field>
             )}
@@ -335,37 +338,40 @@ export default function AuthPage({ onAuth }) {
                   />
                 </Field>
 
-                <Field label={t("dob")} id="dob">
-                  <TextInput
-                    id="dob"
-                    type="date"
-                    min={dobBounds.min}
-                    max={dobBounds.max}
-                    value={dob}
-                    onChange={(event) => setDob(event.target.value)}
-                  />
-                </Field>
+                {/* Side by side where the phone is wide enough, to keep the step short */}
+                <div className="grid gap-4 min-[350px]:grid-cols-[minmax(0,5fr)_minmax(0,4fr)] min-[350px]:gap-3">
+                  <Field label={t("dob")} id="dob">
+                    <TextInput
+                      id="dob"
+                      type="date"
+                      min={dobBounds.min}
+                      max={dobBounds.max}
+                      value={dob}
+                      onChange={(event) => setDob(event.target.value)}
+                    />
+                  </Field>
 
-                <Field label={t("gender")} id="sex-male">
-                  <div className="grid grid-cols-2 gap-2">
-                    {["male", "female"].map((value) => (
-                      <button
-                        key={value}
-                        id={`sex-${value}`}
-                        type="button"
-                        aria-pressed={sex === value}
-                        onClick={() => setSex(value)}
-                        className={`h-12 cursor-pointer rounded-xl border font-semibold transition-colors ${
-                          sex === value
-                            ? "border-brand bg-brand/5 text-brand ring-1 ring-brand"
-                            : "border-slate-300 bg-white text-slate-600 hover:border-slate-400"
-                        }`}
-                      >
-                        {t(value)}
-                      </button>
-                    ))}
-                  </div>
-                </Field>
+                  <Field label={t("gender")} id="sex-male">
+                    <div className="grid grid-cols-2 gap-1.5">
+                      {["male", "female"].map((value) => (
+                        <button
+                          key={value}
+                          id={`sex-${value}`}
+                          type="button"
+                          aria-pressed={sex === value}
+                          onClick={() => setSex(value)}
+                          className={`h-12 cursor-pointer rounded-xl border text-sm font-semibold transition-colors ${
+                            sex === value
+                              ? "border-brand bg-brand/5 text-brand ring-1 ring-brand"
+                              : "border-slate-300 bg-white text-slate-600 hover:border-slate-400"
+                          }`}
+                        >
+                          {t(value)}
+                        </button>
+                      ))}
+                    </div>
+                  </Field>
+                </div>
               </>
             )}
 
@@ -427,9 +433,9 @@ export default function AuthPage({ onAuth }) {
               </div>
             )}
           </form>
-        </div>
+        </Card>
 
-        <p className="mt-4 text-center text-sm text-slate-600">
+        <p className="mt-2 text-center text-sm text-slate-600">
           {mode === "login" && `${t("noAccount")} `}
           {mode === "signup" && `${t("haveAccount")} `}
           <LinkButton onClick={() => switchMode(mode === "login" ? "signup" : "login")}>
@@ -439,6 +445,14 @@ export default function AuthPage({ onAuth }) {
           </LinkButton>
         </p>
       </main>
-    </>
+
+      {/* Left off the longest step so its form has the whole screen */}
+      {step !== "details" && (
+        <footer className="mt-auto pt-2 pb-4 text-center text-xs text-slate-500">
+          <PulseLine />
+          <p className="mt-2">{t("brand")}</p>
+        </footer>
+      )}
+    </div>
   );
 }

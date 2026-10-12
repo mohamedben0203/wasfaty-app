@@ -1,7 +1,7 @@
 import { useCallback, useEffect, useState } from "react";
 import AuthPage from "./components/AuthPage";
 import Header from "./components/Header";
-import Results from "./components/Results";
+import Home from "./components/Home";
 import { restoreUser, signOut } from "./lib/supabase";
 
 export default function App() {
@@ -22,7 +22,7 @@ export default function App() {
       {user !== null && <Header onSignOut={user ? handleSignOut : undefined} />}
 
       {user === null && <AuthPage onAuth={setUser} />}
-      {user && <Results user={user} onSignedOut={handleSignOut} />}
+      {user && <Home user={user} onUserChange={setUser} onSignedOut={handleSignOut} />}
     </div>
   );
 }

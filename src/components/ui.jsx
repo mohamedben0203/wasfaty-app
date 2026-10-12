@@ -1,6 +1,7 @@
 import { useState } from "react";
 import { useI18n } from "../i18n";
 import { DIAL_CODE } from "../lib/phone";
+import { AlertIcon, EyeIcon, GlobeIcon, InfoIcon } from "./icons";
 
 // 16px text keeps iOS from zooming the page when an input is focused
 const inputText = "text-base text-ink outline-none placeholder:text-slate-400";
@@ -8,18 +9,31 @@ const inputFrame = "h-12 rounded-xl border border-slate-300 bg-white";
 const inputClass = `${inputFrame} ${inputText} w-full px-4 focus:border-brand focus:ring-2 focus:ring-brand/20`;
 const focusRing = "focus-visible:outline-2 focus-visible:outline-offset-2 focus-visible:outline-brand";
 
-export function Button({ variant = "primary", className = "", ...props }) {
+export function Button({ variant = "primary", className = "", href, ...props }) {
   const styles =
     variant === "primary"
-      ? "bg-brand text-white hover:bg-brand-dark"
-      : "border border-brand/30 bg-white text-brand hover:border-brand";
+      ? "bg-brand text-white shadow-sm hover:bg-brand-dark"
+      : "border border-slate-300 bg-white text-brand hover:border-brand";
+  const classes = `flex min-h-12 w-full cursor-pointer items-center justify-center gap-2 rounded-xl px-6 font-semibold transition-colors disabled:cursor-not-allowed disabled:opacity-60 ${focusRing} ${styles} ${className}`;
+
+  // With an href it is a link that looks like a button, for actions that open another page
+  if (href) return <a href={href} className={classes} {...props} />;
+  return <button type="button" className={classes} {...props} />;
+}
+
+// Ends an edit form: Cancel beside the submit button
+export function FormActions({ busy, onCancel }) {
+  const { t } = useI18n();
 
   return (
-    <button
-      type="button"
-      className={`min-h-12 w-full cursor-pointer rounded-full px-6 font-bold transition-colors disabled:cursor-not-allowed disabled:opacity-60 ${focusRing} ${styles} ${className}`}
-      {...props}
-    />
+    <div className="grid grid-cols-2 gap-2">
+      <Button variant="secondary" onClick={onCancel} disabled={busy}>
+        {t("cancel")}
+      </Button>
+      <Button type="submit" disabled={busy}>
+        {busy ? t("saving") : t("save")}
+      </Button>
+    </div>
   );
 }
 
@@ -41,17 +55,37 @@ export function LanguageToggle() {
       type="button"
       onClick={toggleLocale}
       lang={locale === "ar" ? "en" : "ar"}
-      className={`min-h-11 cursor-pointer rounded-full border border-slate-300 bg-white px-4 text-sm font-semibold text-brand transition-colors hover:border-brand ${focusRing}`}
+      className={`flex min-h-11 cursor-pointer items-center gap-1.5 rounded-xl border border-slate-200 bg-white px-3 text-sm font-medium text-slate-700 transition-colors hover:border-brand hover:text-brand ${focusRing}`}
     >
+      <GlobeIcon className="size-4 text-slate-500" />
       {t("otherLanguage")}
     </button>
+  );
+}
+
+export function Card({ className = "", ...props }) {
+  return (
+    <div
+      className={`rounded-2xl border border-slate-200 bg-white shadow-[0_1px_2px_rgb(22_41_59/0.04),0_8px_24px_-16px_rgb(22_41_59/0.12)] ${className}`}
+      {...props}
+    />
+  );
+}
+
+export function IconChip({ tone = "accent", children }) {
+  const styles = tone === "accent" ? "bg-accent-soft text-accent-dark" : "bg-slate-100 text-slate-500";
+
+  return (
+    <span className={`flex size-10 shrink-0 items-center justify-center rounded-xl ${styles}`}>
+      {children}
+    </span>
   );
 }
 
 export function Field({ label, id, children }) {
   return (
     <div>
-      <label htmlFor={id} className="mb-1.5 block text-sm font-semibold text-ink">
+      <label htmlFor={id} className="mb-1.5 block text-sm font-medium text-slate-700">
         {label}
       </label>
       {children}
@@ -70,7 +104,7 @@ export function PhoneInput({ id, value, onChange, autoComplete = "tel" }) {
       dir="ltr"
       className={`flex ${inputFrame} focus-within:border-brand focus-within:ring-2 focus-within:ring-brand/20`}
     >
-      <span className="flex items-center border-e border-slate-200 px-3.5 font-semibold text-slate-500">
+      <span className="flex items-center border-e border-slate-200 px-3.5 font-medium text-slate-500">
         {DIAL_CODE}
       </span>
       <input
@@ -108,33 +142,27 @@ export function PasswordInput({ id, value, onChange, autoComplete }) {
         aria-label={visible ? t("hidePassword") : t("showPassword")}
         className={`absolute inset-y-0 end-0 flex w-12 cursor-pointer items-center justify-center rounded-e-xl text-slate-500 hover:text-brand ${focusRing}`}
       >
-        <svg viewBox="0 0 24 24" aria-hidden="true" className="size-5">
-          <g
-            fill="none"
-            stroke="currentColor"
-            strokeWidth="1.75"
-            strokeLinecap="round"
-            strokeLinejoin="round"
-          >
-            <path d="M2.5 12S6 5.5 12 5.5 21.5 12 21.5 12 18 18.5 12 18.5 2.5 12 2.5 12Z" />
-            <circle cx="12" cy="12" r="3" />
-            {visible && <path d="m4 4 16 16" />}
-          </g>
-        </svg>
+        <EyeIcon crossed={visible} />
       </button>
     </div>
   );
 }
 
 export function Notice({ tone = "error", children }) {
-  const styles =
-    tone === "error"
-      ? "border-red-200 bg-red-50 text-red-700"
-      : "border-accent/50 bg-accent/15 text-ink";
+  const error = tone === "error";
+  const styles = error ? "border-red-200 bg-red-50 text-red-800" : "border-accent/50 bg-accent-soft text-ink";
 
   return (
-    <div role={tone === "error" ? "alert" : "status"} className={`rounded-xl border px-4 py-3 text-sm ${styles}`}>
-      {children}
+    <div
+      role={error ? "alert" : "status"}
+      className={`flex gap-2.5 rounded-xl border px-3.5 py-3 text-sm ${styles}`}
+    >
+      {error ? (
+        <AlertIcon className="mt-px size-[1.125rem] text-red-600" />
+      ) : (
+        <InfoIcon className="mt-px size-[1.125rem] text-accent-dark" />
+      )}
+      <div className="min-w-0">{children}</div>
     </div>
   );
 }

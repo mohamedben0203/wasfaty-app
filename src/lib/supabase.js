@@ -14,7 +14,7 @@ function authEmailForPhone(phone) {
   return `${phone.replace(/\D/g, "")}@${AUTH_EMAIL_DOMAIN}`;
 }
 
-async function request(path, { method = "GET", body, token } = {}) {
+async function request(path, { method = "GET", body, token, prefer } = {}) {
   let response;
   try {
     response = await fetch(`${SUPABASE_URL}${path}`, {
@@ -23,6 +23,7 @@ async function request(path, { method = "GET", body, token } = {}) {
         apikey: SUPABASE_ANON_KEY,
         Authorization: `Bearer ${token || SUPABASE_ANON_KEY}`,
         ...(body ? { "Content-Type": "application/json" } : {}),
+        ...(prefer ? { Prefer: prefer } : {}),
       },
       body: body ? JSON.stringify(body) : undefined,
     });
@@ -106,7 +107,7 @@ async function currentSession() {
   return saveSession(data);
 }
 
-// ---- profile and results -------------------------------------------------
+// ---- profile, results and credits ----------------------------------------
 
 async function fetchProfile(session) {
   const { data, error } = await request(
@@ -127,6 +128,24 @@ export async function restoreUser() {
   return data;
 }
 
+// Changes fields on the user's own profile and returns the row as saved.
+// The database checks the values too: the allowed age range, and at most 3 known goals.
+export async function updateProfile(user, changes) {
+  const session = await currentSession();
+  if (!session) return { data: null, error: { code: "signed_out" } };
+
+  const { data, error } = await request(`/rest/v1/users?id=eq.${encodeURIComponent(user.id)}`, {
+    method: "PATCH",
+    body: changes,
+    token: session.access_token,
+    prefer: "return=representation",
+  });
+
+  if (error) return { data: null, error };
+  if (!data?.[0]) return { data: null, error: { code: "profile_missing" } };
+  return { data: data[0], error: null };
+}
+
 export async function listExams(user) {
   const session = await currentSession();
   if (!session) return { data: null, error: { code: "signed_out" } };
@@ -134,12 +153,36 @@ export async function listExams(user) {
   // Older rows may not be linked by user_id yet; the device stores the phone without the "+".
   const phoneDigits = user.phone.replace(/\D/g, "");
   const filter = `or=(user_id.eq.${user.id},person_idnumber.eq.${phoneDigits})`;
-  const columns = "exam_no,received_at,weight_value,bmi_value,score";
+  const columns = "exam_no,received_at,weight_value,bmi_value,bmi_raw,score";
 
   return request(
     `/rest/v1/exams?select=${columns}&${filter}&order=received_at.desc`,
     { token: session.access_token }
   );
+}
+
+// The balance is read again each time: a scan at the kiosk changes it while the app stays open.
+export async function getCredits(user) {
+  const session = await currentSession();
+  if (!session) return { data: null, error: { code: "signed_out" } };
+
+  const id = encodeURIComponent(user.id);
+  const columns = "id,created_at,amount,reason,paid_amount_dinar,balance_after";
+  const [profile, transactions] = await Promise.all([
+    request(`/rest/v1/users?select=credits&id=eq.${id}&limit=1`, { token: session.access_token }),
+    request(
+      `/rest/v1/credit_transactions?select=${columns}&user_id=eq.${id}&order=created_at.desc&limit=100`,
+      { token: session.access_token }
+    ),
+  ]);
+
+  const error = profile.error || transactions.error;
+  if (error) return { data: null, error };
+
+  return {
+    data: { balance: profile.data?.[0]?.credits ?? 0, transactions: transactions.data ?? [] },
+    error: null,
+  };
 }
 
 // ---- auth ----------------------------------------------------------------

@@ -1,8 +1,6 @@
 // Talks to the same Supabase project as wasfati-portal, with plain fetch like the portal does.
 // Accounts are phone + password; Supabase Auth sees the phone as an internal email alias.
 
-import { isMockPhone, isMockUser, mock } from "./mock";
-
 const SUPABASE_URL = import.meta.env.VITE_SUPABASE_URL?.replace(/\/$/, "");
 const SUPABASE_ANON_KEY = import.meta.env.VITE_SUPABASE_ANON_KEY;
 const AUTH_EMAIL_DOMAIN = "internal.wasfati.com";
@@ -133,8 +131,6 @@ export async function restoreUser() {
 // Changes fields on the user's own profile and returns the row as saved.
 // The database checks the values too: the allowed age range, and at most 3 known goals.
 export async function updateProfile(user, changes) {
-  if (isMockUser(user)) return mock.updateProfile(changes);
-
   const session = await currentSession();
   if (!session) return { data: null, error: { code: "signed_out" } };
 
@@ -151,8 +147,6 @@ export async function updateProfile(user, changes) {
 }
 
 export async function listExams(user) {
-  if (isMockUser(user)) return mock.listExams();
-
   const session = await currentSession();
   if (!session) return { data: null, error: { code: "signed_out" } };
 
@@ -169,8 +163,6 @@ export async function listExams(user) {
 
 // The balance is read again each time: a scan at the kiosk changes it while the app stays open.
 export async function getCredits(user) {
-  if (isMockUser(user)) return mock.getCredits();
-
   const session = await currentSession();
   if (!session) return { data: null, error: { code: "signed_out" } };
 
@@ -196,8 +188,6 @@ export async function getCredits(user) {
 // ---- auth ----------------------------------------------------------------
 
 export async function signIn({ phone, password }) {
-  if (isMockPhone(phone)) return mock.signIn({ password });
-
   const { data, error } = await request("/auth/v1/token?grant_type=password", {
     method: "POST",
     body: { email: authEmailForPhone(phone), password },
@@ -220,8 +210,6 @@ export async function signOut() {
 }
 
 export async function phoneExists(phone) {
-  if (isMockPhone(phone)) return mock.phoneExists();
-
   const { data, error } = await request("/rest/v1/rpc/phone_exists", {
     method: "POST",
     body: { p_phone: phone },
@@ -232,8 +220,6 @@ export async function phoneExists(phone) {
 }
 
 export async function requestOtp({ phone, language }) {
-  if (isMockPhone(phone)) return mock.requestOtp();
-
   const { data, error } = await request("/rest/v1/rpc/request_auth_otp", {
     method: "POST",
     body: { customer_number: phone, language, expiry_minutes: 10 },
@@ -246,8 +232,6 @@ export async function requestOtp({ phone, language }) {
 }
 
 export async function verifyOtp({ phone, otp }) {
-  if (isMockPhone(phone)) return mock.verifyOtp({ otp });
-
   const { data, error } = await request("/rest/v1/rpc/verify_auth_otp", {
     method: "POST",
     body: { customer_number: phone, otp },
@@ -261,8 +245,6 @@ export async function verifyOtp({ phone, otp }) {
 // Creates the Supabase Auth account, then the profile row. The profile RPC only succeeds
 // when this phone verified an OTP in the last 30 minutes.
 export async function signUp({ phone, password, name, dob, sex, goals, language }) {
-  if (isMockPhone(phone)) return mock.signUp({ phone, password, name, dob, sex, goals, language });
-
   const email = authEmailForPhone(phone);
   const signup = await request("/auth/v1/signup", {
     method: "POST",
@@ -304,8 +286,6 @@ export async function signUp({ phone, password, name, dob, sex, goals, language 
 }
 
 export async function resetPassword({ phone, password }) {
-  if (isMockPhone(phone)) return mock.resetPassword({ password });
-
   const { data, error } = await request("/rest/v1/rpc/reset_password_with_otp", {
     method: "POST",
     body: { p_customer_number: phone, p_new_password: password },

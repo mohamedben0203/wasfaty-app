@@ -3,8 +3,6 @@
 // Enforced in this browser only. The database's own limit (3 codes per 15 minutes, shared
 // with the kiosk) is looser and is the only one that holds against someone bypassing the app.
 
-import { isMockPhone } from "./mock";
-
 export const RESEND_COOLDOWN_SECONDS = 5 * 60;
 export const MAX_CODES_PER_HOUR = 3;
 
@@ -38,9 +36,6 @@ export function getOtpStatus(phone, now = Date.now()) {
 }
 
 export function recordOtpSend(phone, now = Date.now()) {
-  // The test number sends nothing, so it has nothing to limit (and nothing of it is stored)
-  if (isMockPhone(phone)) return;
-
   const all = readSends();
   all[phone] = [...recentSends(phone, now), now];
   try {
